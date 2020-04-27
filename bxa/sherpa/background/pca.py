@@ -41,9 +41,11 @@ def pca(M):
         print('  --> need %d components to explain %.2f%%' % (n, cut))
     return U, s, V, mean
 
+
 def pca_predict(U, s, V, mean):
     S = numpy.diag(s)
     return numpy.dot(U, numpy.dot(S, V.T)) + mean.reshape((1,-1))
+
 
 def pca_get_vectors(s, V, mean):
     #U = numpy.eye(len(s))
@@ -51,16 +53,21 @@ def pca_get_vectors(s, V, mean):
     Sroot = numpy.diag(s**0.5)
     return numpy.dot(Sroot, V.T)
 
+
 def pca_cut(U, s, V, mean, ncomponents=20):
     return U[:, :ncomponents], s[:ncomponents], V[:,:ncomponents], mean
+
+
 def pca_cut_adapt(U, s, V, mean):
     return U[:, :ncomponents], s[:ncomponents], V[:,:ncomponents], mean
+
 
 def pca_check(M, U, s, V, mean):
     # if we use only the first 20 PCs the reconstruction is less accurate
     Mhat2 = pca_predict(U, s, V, mean)
     print("Using %d PCs, MSE = %.6G"  % (len(s), numpy.mean((M - Mhat2)**2)))
     return M - Mhat2
+
 
 def get_unit_response(i):
     copy_data(i,"temp_unitrsp")
@@ -69,6 +76,7 @@ def get_unit_response(i):
     bunitrsp = get_response("temp_unitrsp", bkg_id=1)
     delete_data("temp_unitrsp")
     return bunitrsp
+
 
 def __get_identity_response(i):
     n = get_bkg(i).counts.size
@@ -89,38 +97,38 @@ def __get_identity_response(i):
     delete_data("temp_unitrsp")
     return bunitrsp
 
-#class IdentityResponse(CompositeModel, ArithmeticModel):
-#    def __init__(self, n, model, arf, rmf):
-#        self.n = n
-#        self.elo = numpy.arange(n)
-#        self.ehi = numpy.arange(n)
-#        self.lo = numpy.arange(n)
-#        self.hi = numpy.arange(n)
-#        self.xlo = numpy.arange(n)
-#        self.xhi = numpy.arange(n)
-#        self.pars = model.pars
-#        self.rmf = rmf
-#        self.arf = arf
-#        self.model = model
-#        CompositeModel.__init__(self, 'unitrsp(%s)' % model.name,
-#                                (model,))
-#    def startup(self, *args):
-#        self.model.startup(*args)
-#        CompositeModel.startup(self, *args)
+# class IdentityResponse(CompositeModel, ArithmeticModel):
+#     def __init__(self, n, model, arf, rmf):
+#         self.n = n
+#         self.elo = numpy.arange(n)
+#         self.ehi = numpy.arange(n)
+#         self.lo = numpy.arange(n)
+#         self.hi = numpy.arange(n)
+#         self.xlo = numpy.arange(n)
+#         self.xhi = numpy.arange(n)
+#         self.pars = model.pars
+#         self.rmf = rmf
+#         self.arf = arf
+#         self.model = model
+#         CompositeModel.__init__(self, 'unitrsp(%s)' % model.name,
+#                                 (model,))
+#     def startup(self, *args):
+#         self.model.startup(*args)
+#         CompositeModel.startup(self, *args)
 #
-#    def teardown(self, *args):
-#        self.model.teardown(*args)
-#        CompositeModel.teardown(self, *args)
+#     def teardown(self, *args):
+#         self.model.teardown(*args)
+#         CompositeModel.teardown(self, *args)
 #
-#    def __call__(self, model):
-#        self.model = model
-#        return model
-#    def apply_rmf(self, src):
-#        return src
-#    def calc(self, p, x, xhi=None, *args, **kwargs):
-#        src = self.model.calc(p, self.xlo, self.xhi)
-#        assert numpy.isfinite(src).all(), src
-#        return src
+#     def __call__(self, model):
+#         self.model = model
+#         return model
+#     def apply_rmf(self, src):
+#         return src
+#     def calc(self, p, x, xhi=None, *args, **kwargs):
+#         src = self.model.calc(p, self.xlo, self.xhi)
+#         assert numpy.isfinite(src).all(), src
+#         return src
 
 
 class IdentityResponse(RSPModelNoPHA):
@@ -133,12 +141,15 @@ class IdentityResponse(RSPModelNoPHA):
         self.hi = numpy.arange(n)
         self.xlo = numpy.arange(n)
         self.xhi = numpy.arange(n)
+
     def apply_rmf(self, src):
         return src
+
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
         assert numpy.isfinite(src).all(), src
         return src
+
 
 """
 class DualIdentityResponse(RSPModelNoPHA):
@@ -170,6 +181,7 @@ set_full_model(id, DualIdentityResponse(bkg_model.n, bkg_model.model, arf=bkg_mo
 calc_stat()
 """
 
+
 class IdentityRMF(RMFModelNoPHA):
     def __init__(self, n, model, rmf):
         self.n = n
@@ -180,12 +192,15 @@ class IdentityRMF(RMFModelNoPHA):
         self.hi = numpy.arange(n)
         self.xlo = numpy.arange(n)
         self.xhi = numpy.arange(n)
+
     def apply_rmf(self, src):
         return src
+
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
         assert numpy.isfinite(src).all(), src
         return src
+
 
 def get_identity_response(i):
     n = get_bkg(i).counts.size
@@ -195,7 +210,6 @@ def get_identity_response(i):
         return lambda model: IdentityResponse(n, model, arf=arf, rmf=rmf)
     except:
         return lambda model: IdentityRMF(n, model, rmf=rmf)
-
 
 
 """
@@ -215,8 +229,8 @@ in AIC/cstat.
 logf = logging.getLogger('bxa.Fitter')
 logf.setLevel(logging.INFO)
 
-# Model
-class PCAModel(ArithmeticModel):
+
+class PCAModel(ArithmeticModel):  # Model
     def __init__(self, modelname, data):
         self.U = data['U']
         self.V = numpy.matrix(data['components'])
@@ -235,6 +249,7 @@ class PCAModel(ArithmeticModel):
             pars.append(pi)
         super(ArithmeticModel, self).__init__(modelname, pars=pars)
 
+
     def calc(self, p, left, right, *args, **kwargs):
         try:
             lognorm = p[0]
@@ -251,10 +266,13 @@ class PCAModel(ArithmeticModel):
 
     def startup(self, cache):
         pass
+
     def teardown(self):
         pass
+
     def guess(self, dep, *args, **kwargs):
         self._load_params()
+
 
 class GaussModel(ArithmeticModel):
     def __init__(self, modelname):
@@ -279,8 +297,10 @@ class GaussModel(ArithmeticModel):
 
     def teardown(self):
         pass
+
     def guess(self, dep, *args, **kwargs):
         self._load_params()
+
 
 class PCAFitter(object):
     def __init__(self, id=None):
