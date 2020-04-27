@@ -25,6 +25,25 @@ def saveBkgPCA(id=1, writeTo='bkgPCA.json'):
         json.dump(parDict, f)
 
 
+def saveSrcModel(id=1, writeTo='srcPowerLaw.json'):
+    """
+    """
+    srcModel = ui.get_model(id=id)
+    parDict = {p.fullname: p.val for p in srcModel.pars}
+    with open(writeTo, 'w') as f:
+        json.dump(parDict, f)
+
+
+def loadSrcModel(id=1, readFrom='srcPowerLaw.json'):
+    """
+    """
+    with open(readFrom, 'r') as f:
+        parDict = json.load(f)
+    srcModel = ui.get_model(id=id)
+    for p in srcModel.pars:
+        p.val = parDict[p.fullname]
+
+
 def loadBkgPCA(id=1, readFrom='bkgPCA.json'):
     """
     load PCA background from
