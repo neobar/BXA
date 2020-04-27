@@ -89,38 +89,38 @@ def __get_identity_response(i):
     delete_data("temp_unitrsp")
     return bunitrsp
 
-class IdentityResponse(CompositeModel, ArithmeticModel):
-    def __init__(self, n, model, arf, rmf):
-        self.n = n
-        self.elo = numpy.arange(n)
-        self.ehi = numpy.arange(n)
-        self.lo = numpy.arange(n)
-        self.hi = numpy.arange(n)
-        self.xlo = numpy.arange(n)
-        self.xhi = numpy.arange(n)
-        self.pars = model.pars
-        self.rmf = rmf
-        self.arf = arf
-        self.model = model
-        CompositeModel.__init__(self, 'unitrsp(%s)' % model.name,
-                                (model,))
-    def startup(self, *args):
-        self.model.startup(*args)
-        CompositeModel.startup(self, *args)
-
-    def teardown(self, *args):
-        self.model.teardown(*args)
-        CompositeModel.teardown(self, *args)
-
-    def __call__(self, model):
-        self.model = model
-        return model
-    def apply_rmf(self, src):
-        return src
-    def calc(self, p, x, xhi=None, *args, **kwargs):
-        src = self.model.calc(p, self.xlo, self.xhi)
-        assert numpy.isfinite(src).all(), src
-        return src
+#class IdentityResponse(CompositeModel, ArithmeticModel):
+#    def __init__(self, n, model, arf, rmf):
+#        self.n = n
+#        self.elo = numpy.arange(n)
+#        self.ehi = numpy.arange(n)
+#        self.lo = numpy.arange(n)
+#        self.hi = numpy.arange(n)
+#        self.xlo = numpy.arange(n)
+#        self.xhi = numpy.arange(n)
+#        self.pars = model.pars
+#        self.rmf = rmf
+#        self.arf = arf
+#        self.model = model
+#        CompositeModel.__init__(self, 'unitrsp(%s)' % model.name,
+#                                (model,))
+#    def startup(self, *args):
+#        self.model.startup(*args)
+#        CompositeModel.startup(self, *args)
+#
+#    def teardown(self, *args):
+#        self.model.teardown(*args)
+#        CompositeModel.teardown(self, *args)
+#
+#    def __call__(self, model):
+#        self.model = model
+#        return model
+#    def apply_rmf(self, src):
+#        return src
+#    def calc(self, p, x, xhi=None, *args, **kwargs):
+#        src = self.model.calc(p, self.xlo, self.xhi)
+#        assert numpy.isfinite(src).all(), src
+#        return src
 
 
 class IdentityResponse(RSPModelNoPHA):
