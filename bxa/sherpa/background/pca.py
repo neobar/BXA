@@ -115,7 +115,7 @@ class IdentityResponse(CompositeModel, ArithmeticModel):
     def __call__(self, model):
         self.model = model
         return model
-    def apply_rmf(src):
+    def apply_rmf(self, src):
         return src
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
@@ -133,7 +133,7 @@ class IdentityResponse(RSPModelNoPHA):
         self.hi = numpy.arange(n)
         self.xlo = numpy.arange(n)
         self.xhi = numpy.arange(n)
-    def apply_rmf(src):
+    def apply_rmf(self, src):
         return src
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
@@ -180,7 +180,7 @@ class IdentityRMF(RMFModelNoPHA):
         self.hi = numpy.arange(n)
         self.xlo = numpy.arange(n)
         self.xhi = numpy.arange(n)
-    def apply_rmf(src):
+    def apply_rmf(self, src):
         return src
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
@@ -249,7 +249,7 @@ class PCAModel(ArithmeticModel):
             print("Exception in PCA model:", e, p)
             raise e
 
-    def startup(self):
+    def startup(self, cache):
         pass
     def teardown(self):
         pass
@@ -274,7 +274,7 @@ class GaussModel(ArithmeticModel):
             print("Exception in PCA model:", e, p)
             raise e
 
-    def startup(self):
+    def startup(self, cache):
         pass
 
     def teardown(self):
