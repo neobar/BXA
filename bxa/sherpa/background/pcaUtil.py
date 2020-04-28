@@ -34,6 +34,29 @@ def saveSrcModel(id=1, writeTo='srcPowerLaw.json'):
         json.dump(parDict, f)
 
 
+def saveModel(amodel, writeTo):
+    """
+    Save the model paramaters to writeTo file.
+    """
+    # The values of Dict is a pair of (value, frozen).
+    # The paramater is frozen if frozen is True.
+    parDict = {p.name: (p.val, p.frozen) for p in amodel.pars}
+    with open(writeTo, 'w') as f:
+        json.dump(parDict, f)
+
+
+def loadPars(amodel, readFrom):
+    """
+    """
+    with open(readFrom, 'r') as f:
+        parDict = json.load(f)
+    for p in amodel.pars:
+        val, frozen = parDict[p.name]
+        p.val = val
+        if frozen:
+            ui.freeze(p)
+
+
 def loadSrcModel(id=1, readFrom='srcPowerLaw.json'):
     """
     """
