@@ -26,7 +26,7 @@ def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True):
             if p.val == 0 and p.fullname.startswith('pca'):
                 ui.freeze(p)
         fsrc, fbkg, ffull = ui.get_stat_info()
-        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat']:
+        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat', 'statval']:
             parDict[i] = getattr(fbkg, i)
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
@@ -39,7 +39,7 @@ def saveSrcModel(id=1, writeTo='srcPowerLaw.json', stat=True):
     parDict = {p.fullname: p.val for p in srcModel.pars}
     if stat:
         fsrc, fbkg, ffull = ui.get_stat_info()
-        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat']:
+        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat', 'statval']:
             parDict[i] = getattr(fsrc, i)
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
