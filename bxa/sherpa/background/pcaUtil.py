@@ -15,32 +15,50 @@ def fitBkgPCA(id=1):
     bkgmodel.fit()
 
 
-def saveBkgPCA(id=1, writeTo='bkgPCA.json'):
+def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True):
     """
     Save the best-fit background model to a .json file.
     """
     bkgModel = ui.get_bkg_model(id=id)
     parDict = {p.fullname: p.val for p in bkgModel.pars}
+    if stat:
+        for p in bkgModel.pars:
+            if p.val == 0 and p.fullname.startswith('pca'):
+                ui.freeze(p)
+        fsrc, fbkg, ffull = ui.get_stat_info()
+        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat']:
+            parDict[i] = getattr(fbkg, i)
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
 
 
-def saveSrcModel(id=1, writeTo='srcPowerLaw.json'):
+def saveSrcModel(id=1, writeTo='srcPowerLaw.json', stat=True):
     """
     """
     srcModel = ui.get_model(id=id)
     parDict = {p.fullname: p.val for p in srcModel.pars}
+    if stat:
+        fsrc, fbkg, ffull = ui.get_stat_info()
+        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat']:
+            parDict[i] = getattr(fsrc, i)
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
 
 
-def saveModel(amodel, writeTo):
+def saveModel(amodel, writeTo, stat=True):
     """
     Save the model paramaters to writeTo file.
+    Paramaters
+    stat = True
+        if stat is True, save the stat info as well.
     """
     # The values of Dict is a pair of (value, frozen).
     # The paramater is frozen if frozen is True.
     parDict = {p.name: (p.val, p.frozen) for p in amodel.pars}
+    if stat:
+        fsrc, fbkg, ffull = ui.get_stat_info()
+        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat']:
+            parDict[i] = getattr(fsrc, i)
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
 
