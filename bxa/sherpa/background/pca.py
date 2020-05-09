@@ -44,7 +44,7 @@ def pca(M):
 
 def pca_predict(U, s, V, mean):
     S = numpy.diag(s)
-    return numpy.dot(U, numpy.dot(S, V.T)) + mean.reshape((1,-1))
+    return numpy.dot(U, numpy.dot(S, V.T)) + mean.reshape((1, -1))
 
 
 def pca_get_vectors(s, V, mean):
@@ -131,6 +131,45 @@ def __get_identity_response(i):
 #         return src
 
 
+class IdentityPileupResponse(CompositeModel, ArithmeticModel):
+
+    def __init__(self, n, model, rmf, arf, pha):
+        self.n = n
+        self.elo = numpy.arange(n)
+        self.ehi = numpy.arange(n)
+        self.lo = numpy.arange(n)
+        self.hi = numpy.arange(n)
+        self.xlo = numpy.arange(n)
+        self.xhi = numpy.arange(n)
+
+        self.pha = pha
+        self.channel = pha.get_noticed_channels()
+        self.mask = pha.get_mask()
+
+        self.rmf = rmf
+        self.arf = arf
+        self.model = model
+        CompositeModel.__init__(self, ('%s(%s)' % ('apply_identity_rsp', self.model.name)), (model,))
+
+    def startup(self, *args):
+        self.model.startup(*args)
+        CompositeModel.startup(self, *args)
+
+    def apply_rmf(self, src):
+        return src
+
+    def teardown(self):
+        self.model.teardown()
+        CompositeModel.teardown(self)
+
+    def calc(self, p, x, xhi=None, **kwargs):
+        vals = self.model.calc(p, self.xlo, self.xhi)
+        assert numpy.isfinite(vals).all(), vals
+        if self.mask is not None:
+            vals = vals[self.mask]
+        return vals
+
+
 class IdentityResponse(RSPModelNoPHA):
     def __init__(self, n, model, arf, rmf):
         self.n = n
@@ -200,6 +239,23 @@ class IdentityRMF(RMFModelNoPHA):
         src = self.model.calc(p, self.xlo, self.xhi)
         assert numpy.isfinite(src).all(), src
         return src
+
+
+def replace_bkg_identity_response(i=1):
+    """
+    The PileupRMFModel(), by default, only calculate convolved model at noticed channel.
+    See https://github.com/sherpa/sherpa/blob/master/sherpa/astro/instrument.py
+
+    Here, simply replace the response of the background that calculates at all channels to
+    that caclculate background component at only noticed channel.
+    """
+    pha = get_bkg(i)
+    n = pha.counts.size
+    bkgModel = get_bkg_model().model
+    rmf = get_bkg_rmf(i)
+    arf = get_bkg_arf(i)
+    return IdentityPileupResponse(n, bkgModel, rmf=rmf, arf=arf, pha=pha)
+
 
 
 def get_identity_response(i):
