@@ -251,10 +251,11 @@ def replace_bkg_identity_response(i=1):
     """
     pha = get_bkg(i)
     n = pha.counts.size
+    src = get_data(i) # mask background according to src.
     bkgModel = get_bkg_model().model
     rmf = get_bkg_rmf(i)
     arf = get_bkg_arf(i)
-    return IdentityPileupResponse(n, bkgModel, rmf=rmf, arf=arf, pha=pha)
+    return IdentityPileupResponse(n, bkgModel, rmf=rmf, arf=arf, pha=src)
 
 
 
