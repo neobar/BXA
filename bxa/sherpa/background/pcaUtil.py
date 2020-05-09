@@ -32,20 +32,22 @@ def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True):
         json.dump(parDict, f)
 
 
-def saveSrcModel(id=1, writeTo='srcPowerLaw.json', stat=True):
+def saveSrcModel(id=1, writeTo='srcPowerLaw.json', stat=True, info={}):
     """
     """
     srcModel = ui.get_model(id=id)
     parDict = {p.fullname: p.val for p in srcModel.pars}
     if stat:
-        fsrc, fbkg, ffull = ui.get_stat_info()
+        fsrc, *_ = ui.get_stat_info()
         for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat', 'statval']:
             parDict[i] = getattr(fsrc, i)
+    for key, val in info.items():
+        parDict[key] = val
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
 
 
-def saveModel(amodel, writeTo, stat=True):
+def saveModel(amodel, writeTo, stat=True, info={}):
     """
     Save the model paramaters to writeTo file.
     Paramaters
@@ -56,9 +58,11 @@ def saveModel(amodel, writeTo, stat=True):
     # The paramater is frozen if frozen is True.
     parDict = {p.name: (p.val, p.frozen) for p in amodel.pars}
     if stat:
-        fsrc, fbkg, ffull = ui.get_stat_info()
-        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat']:
+        fsrc, *_ = ui.get_stat_info()  # Only the first data set, i.e. the source is returned.
+        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat', 'statval']:
             parDict[i] = getattr(fsrc, i)
+    for key, val in info.items():
+        parDict[key] = val
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
 
