@@ -321,7 +321,7 @@ class PCAModel(ArithmeticModel):  # Model
             print("Exception in PCA model:", e, p)
             raise e
 
-    def startup(self, cache):
+    def startup(self, *args):
         pass
 
     def teardown(self, *args):
@@ -371,6 +371,7 @@ class PCAFitter(object):
         self.id = id
         logf.info('PCAFitter(for ID=%s)' % (id))
         hdr = get_bkg(id).header
+        self.ndata = len(get_bkg(id).counts)
 
         telescope = hdr.get('TELESCOP','')
         instrument = hdr.get('INSTRUME', '')
