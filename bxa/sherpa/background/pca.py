@@ -324,7 +324,7 @@ class PCAModel(ArithmeticModel):  # Model
     def startup(self, cache):
         pass
 
-    def teardown(self):
+    def teardown(self, *args):
         pass
 
     def guess(self, dep, *args, **kwargs):
@@ -376,14 +376,15 @@ class PCAFitter(object):
         instrument = hdr.get('INSTRUME', '')
         if telescope == '' and instrument == '':
             raise Exception('ERROR: The TELESCOP/INSTRUME headers are not set in the data file.')
-        filename = os.path.join(os.path.dirname(__file__), ('%s_%s.json' % (telescope, instrument)).lower())
-        if os.path.exists(filename):
-            self.load(filename)
-            return
-        filename = os.path.join(os.path.dirname(__file__), ('%s.json' % telescope).lower())
-        if os.path.exists(filename):
-            self.load(filename)
-            return
+        for folder in os.environ.get('BKGMODELDIR', '.'), os.path.dirname(__file__):
+            filename = os.path.join(folder, ('%s_%s_%d.json' % (telescope, instrument, self.ndata)).lower())
+            if os.path.exists(filename):
+                self.load(filename)
+                return
+            filename = os.path.join(folder, ('%s_%d.json' % (telescope, self.ndata)).lower())
+            if os.path.exists(filename):
+                self.load(filename)
+                return
         raise Exception('ERROR: Could not load PCA components for this detector (%s %s). Try the SingleFitter instead.' % (telescope, instrument))
 
     def load(self, filename):
