@@ -132,7 +132,9 @@ def __get_identity_response(i):
 
 
 class IdentityPileupResponse(CompositeModel, ArithmeticModel):
-
+    """
+    When the piledup model (jdpileup) is used.
+    """
     def __init__(self, n, model, rmf, arf, pha):
         self.n = n
         self.elo = numpy.arange(n)
@@ -256,7 +258,6 @@ def replace_bkg_identity_response(i=1):
     rmf = get_bkg_rmf(i)
     arf = get_bkg_arf(i)
     return IdentityPileupResponse(n, bkgModel, rmf=rmf, arf=arf, pha=src)
-
 
 
 def get_identity_response(i):
