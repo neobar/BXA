@@ -95,12 +95,13 @@ def loadBkgPCA(id=1, readFrom='bkgPCA.json'):
     """
     with open(readFrom, 'r') as f:
         parDict = json.load(f)
+        parDictRed = {k.split('.')[1]: v for k, v in parDict.items() if k.startswith('pca')}
     fitter = PCAFitter(id=id)
     bkgModel = PCAModel('pca{:d}'.format(id), data=fitter.pca)
     for p in bkgModel.pars:
-        p.val = parDict[p.fullname]
-    idrsp = get_identity_response(1)
-    ui.set_bkg_full_model(idrsp(bkgModel))
+        p.val = parDictRed[p.name]
+    idrsp = get_identity_response(id)
+    ui.set_bkg_full_model(id, idrsp(bkgModel))
 
 
 def fixBkgModel(id=1, freeNorm=True):
