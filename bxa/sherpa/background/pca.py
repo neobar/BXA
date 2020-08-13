@@ -579,8 +579,6 @@ class PCAFitter(object):
                 break
 
 
-
-
 def auto_background(id):
     bkgmodel = PCAFitter(id)
     log_sherpa = logging.getLogger('sherpa.astro.ui.utils')
