@@ -168,20 +168,6 @@ def get_identity_response(i):
         return lambda model: IdentityRMF(n, model, rmf=rmf)
 
 
-"""
-Find background model.
-
-I analysed the background for many instruments, and stored mean and
- principle components. The data file tells us which instrument we deal with,
- so we load the correct file.
-First guess:
- 1) PCA decomposition.
- 2) Mean scaled, other components zero
-The one with the better cstat is kept.
-Then start with 0 components and add 1, 2 components until no improvement
-in AIC/cstat.
-
-"""
 logf = logging.getLogger('bxa.Fitter')
 logf.setLevel(logging.INFO)
 
@@ -259,11 +245,19 @@ class GaussModel(ArithmeticModel):
 class PCAFitter(object):
     def __init__(self, id=None):
         """
+        Find background model.
+
         id: which data id to fit
 
-        filename: prefix for where to store background information
-
-        load: whether the background file should be loaded now
+        I analysed the background for many instruments, and stored mean and
+        principle components. The data file tells us which instrument we deal with,
+        so we load the correct file.
+        First guess:
+        1) PCA decomposition.
+        2) Mean scaled, other components zero
+        The one with the better cstat is kept.
+        Then start with 0 components and add 1, 2 components until no improvement
+        in AIC/cstat.
         """
         self.id = id
         bkg = ui.get_bkg(id)
