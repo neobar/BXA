@@ -11,7 +11,7 @@ and then fitting each stage
 
 
 """
-import numpy
+import numpy as np
 import json
 import logging
 import os
@@ -25,28 +25,28 @@ from sherpa.astro.instrument import RSPModelNoPHA, RMFModelNoPHA
 def pca(M):
     mean = M.mean(axis=0)
     Moffset = M - mean.reshape((1, -1))
-    U, s, Vt = numpy.linalg.svd(Moffset, full_matrices=False)
+    U, s, Vt = np.linalg.svd(Moffset, full_matrices=False)
     V = Vt.T
     print('variance explained:', s**2/len(M))
-    c = numpy.cumsum(s**2/len(M))
+    c = np.cumsum(s**2/len(M))
     c = c / c[-1]
     for cut in 0.80, 0.90, 0.95, 0.99:
-        idx, = numpy.where(c > cut)
+        idx, = np.where(c > cut)
         n = idx.min() + 1
         print('  --> need %d components to explain %.2f%%' % (n, cut))
     return U, s, V, mean
 
 
 def pca_predict(U, s, V, mean):
-    S = numpy.diag(s)
-    return numpy.dot(U, numpy.dot(S, V.T)) + mean.reshape((1, -1))
+    S = np.diag(s)
+    return np.dot(U, np.dot(S, V.T)) + mean.reshape((1, -1))
 
 
 def pca_get_vectors(s, V, mean):
-    # U = numpy.eye(len(s))
+    # U = np.eye(len(s))
     # return pca_predict(U, s, V, mean)
-    Sroot = numpy.diag(s**0.5)
-    return numpy.dot(Sroot, V.T)
+    Sroot = np.diag(s**0.5)
+    return np.dot(Sroot, V.T)
 
 
 def pca_cut(U, s, V, mean, ncomponents=20):
@@ -56,7 +56,7 @@ def pca_cut(U, s, V, mean, ncomponents=20):
 def pca_check(M, U, s, V, mean):
     # if we use only the first 20 PCs the reconstruction is less accurate
     Mhat2 = pca_predict(U, s, V, mean)
-    print("Using %d PCs, MSE = %.6G" % (len(s), numpy.mean((M - Mhat2)**2)))
+    print("Using %d PCs, MSE = %.6G" % (len(s), np.mean((M - Mhat2)**2)))
     return M - Mhat2
 
 
@@ -66,12 +66,12 @@ class IdentityPileupResponse(CompositeModel, ArithmeticModel):
     """
     def __init__(self, n, model, rmf, arf, pha):
         self.n = n
-        self.elo = numpy.arange(n)
-        self.ehi = numpy.arange(n)
-        self.lo = numpy.arange(n)
-        self.hi = numpy.arange(n)
-        self.xlo = numpy.arange(n)
-        self.xhi = numpy.arange(n)
+        self.elo = np.arange(n)
+        self.ehi = np.arange(n)
+        self.lo = np.arange(n)
+        self.hi = np.arange(n)
+        self.xlo = np.arange(n)
+        self.xhi = np.arange(n)
 
         self.pha = pha
         self.channel = pha.get_noticed_channels()
@@ -95,7 +95,7 @@ class IdentityPileupResponse(CompositeModel, ArithmeticModel):
 
     def calc(self, p, x, xhi=None, **kwargs):
         vals = self.model.calc(p, self.xlo, self.xhi)
-        assert numpy.isfinite(vals).all(), vals
+        assert np.isfinite(vals).all(), vals
         if self.mask is not None:
             vals = vals[self.mask]
         return vals
@@ -105,19 +105,19 @@ class IdentityResponse(RSPModelNoPHA):
     def __init__(self, n, model, arf, rmf):
         self.n = n
         RSPModelNoPHA.__init__(self, arf=arf, rmf=rmf, model=model)
-        self.elo = numpy.arange(n)
-        self.ehi = numpy.arange(n)
-        self.lo = numpy.arange(n)
-        self.hi = numpy.arange(n)
-        self.xlo = numpy.arange(n)
-        self.xhi = numpy.arange(n)
+        self.elo = np.arange(n)
+        self.ehi = np.arange(n)
+        self.lo = np.arange(n)
+        self.hi = np.arange(n)
+        self.xlo = np.arange(n)
+        self.xhi = np.arange(n)
 
     def apply_rmf(self, src):
         return src
 
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
-        assert numpy.isfinite(src).all(), src
+        assert np.isfinite(src).all(), src
         return src
 
 
@@ -125,19 +125,19 @@ class IdentityRMF(RMFModelNoPHA):
     def __init__(self, n, model, rmf):
         self.n = n
         RMFModelNoPHA.__init__(self, rmf=rmf, model=model)
-        self.elo = numpy.arange(n)
-        self.ehi = numpy.arange(n)
-        self.lo = numpy.arange(n)
-        self.hi = numpy.arange(n)
-        self.xlo = numpy.arange(n)
-        self.xhi = numpy.arange(n)
+        self.elo = np.arange(n)
+        self.ehi = np.arange(n)
+        self.lo = np.arange(n)
+        self.hi = np.arange(n)
+        self.xlo = np.arange(n)
+        self.xhi = np.arange(n)
 
     def apply_rmf(self, src):
         return src
 
     def calc(self, p, x, xhi=None, *args, **kwargs):
         src = self.model.calc(p, self.xlo, self.xhi)
-        assert numpy.isfinite(src).all(), src
+        assert np.isfinite(src).all(), src
         return src
 
 
@@ -175,7 +175,7 @@ logf.setLevel(logging.INFO)
 class PCAModel(ArithmeticModel):  # Model
     def __init__(self, modelname, data):
         # self.U = data['U']
-        self.V = numpy.matrix(data['components'])
+        self.V = np.matrix(data['components'])
         self.mean = data['mean']
         self.s = data['values']
         self.ilo = data['ilo']
@@ -194,8 +194,8 @@ class PCAModel(ArithmeticModel):  # Model
     def calc(self, p, left, right, *args, **kwargs):
         try:
             lognorm = p[0]
-            pars = numpy.array(p[1:])
-            y = numpy.array(pars * self.V.T + self.mean).flatten()
+            pars = np.array(p[1:])
+            y = np.array(pars * self.V.T + self.mean).flatten()
             cts = (10**y - 1) * 10**lognorm
 
             out = left * 0.0
@@ -226,7 +226,7 @@ class GaussModel(ArithmeticModel):
     def calc(self, p, left, right, *args, **kwargs):
         try:
             LineE, Sigma, norm = p
-            cts = norm * numpy.exp(-0.5 * ((left - LineE)/Sigma)**2)
+            cts = norm * np.exp(-0.5 * ((left - LineE)/Sigma)**2)
             return cts
         except Exception as e:
             print("Exception in PCA model:", e, p)
@@ -261,11 +261,10 @@ class PCAFitter(object):
         """
         self.id = id
         bkg = ui.get_bkg(id)
-        logf.info('PCAFitter(for ID=%s)' % (id))
-        hdr = ui.get_bkg(id).header
         self.data = bkg.counts
         self.ndata = len(self.data)
         self.ngaussians = 0
+        hdr = ui.get_bkg(id).header
         telescope = hdr.get('TELESCOP', '')
         instrument = hdr.get('INSTRUME', '')
         if telescope == '' and instrument == '':
@@ -282,11 +281,10 @@ class PCAFitter(object):
         raise Exception('ERROR: Could not load PCA components for this detector (%s %s, %d channels). Try the SingleFitter instead.' % (telescope, instrument, self.ndata))
 
     def load(self, filename):
-        logf.info('loading PCA information from %s' % (filename))
-        data = json.load(open(filename))
-        self.pca = dict()
-        for k, v in data.items():
-            self.pca[k] = numpy.array(v)
+        with open(filename, 'r') as f:
+            self.pca = json.load(f)
+        for k, v in self.pca.items():
+            self.pca[k] = np.array(v)
         nactivedata = self.pca['ihi'] - self.pca['ilo']
         assert self.pca['hi'].shape == (nactivedata,), 'spectrum has different number of channels: %d vs %s' % (len(self.pca['hi']), self.ndata)
         assert self.pca['lo'].shape == self.pca['hi'].shape
@@ -296,7 +294,7 @@ class PCAFitter(object):
         ilo = int(self.pca['ilo'])
         ihi = int(self.pca['ihi'])
         self.cts = self.data[ilo:ihi]
-        self.x = numpy.arange(ihi-ilo)
+        self.x = np.arange(ihi-ilo)
         self.ilo = ilo
         self.ihi = ihi
 
@@ -306,16 +304,16 @@ class PCAFitter(object):
         # lo = self.pca['lo']
         # hi = self.pca['hi']
         mean = self.pca['mean']
-        V = numpy.matrix(self.pca['components'])
+        V = np.matrix(self.pca['components'])
         s = self.pca['values']
         # U = self.pca['U']
         ncts = self.cts.sum()
         print('have %d background counts for deconvolution' % ncts)
-        y = numpy.log10(self.cts * 1. / ncts + 1.0)
+        y = np.log10(self.cts * 1. / ncts + 1.0)
         z = (y - mean) * V
         assert z.shape == (1, len(s)), z.shape
         z = z.tolist()[0]
-        return numpy.array([numpy.log10(ncts + 0.1)] + z)
+        return np.array([np.log10(ncts + 0.1)] + z)
 
     def calc_bkg_stat(self):
         ss = [s for s in ui.get_stat_info() if self.id in s.ids and s.bkg_ids is not None and len(s.bkg_ids) > 0]
@@ -328,9 +326,7 @@ class PCAFitter(object):
 
     def fit(self):
         # try a PCA decomposition of this spectrum
-        logf.info('fitting background of ID=%s using PCA method' % (self.id))
         initial = self.decompose()
-        print('fit: initial PCA decomposition: %s' % (initial))
         id = self.id
         ui.set_method('neldermead')
         bkgmodel = PCAModel('pca%s' % id, data=self.pca)
@@ -434,14 +430,14 @@ class PCAFitter(object):
             m = ui.get_bkg_fit_plot(id)
             y = m.dataplot.y.cumsum()
             z = m.modelplot.y.cumsum()
-            diff_rate = numpy.abs(y - z)
+            diff_rate = np.abs(y - z)
             ui.set_analysis(id, "ener", "counts")
             m = ui.get_bkg_fit_plot(id)
             x = m.dataplot.x
             y = m.dataplot.y.cumsum()
             z = m.modelplot.y.cumsum()
-            diff = numpy.abs(y - z)
-            i = numpy.argmax(diff)
+            diff = np.abs(y - z)
+            i = np.argmax(diff)
             energies = x
             e = x[i]
             print('largest remaining discrepancy at %.3fkeV[%d], need %d counts' % (x[i], i, diff[i]))
