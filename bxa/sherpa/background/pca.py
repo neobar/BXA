@@ -482,6 +482,7 @@ class PCAFitter(object):
         # Restore filter
         self.cstat, self.dof = self.calc_bkg_stat(dof=True)  # Save the final cstat and dof (dof = ihi - ilo)
         ui.set_analysis('channel')
+        self.filter_bkg = ui.get_filter()  # Save the filter for background fitting.
         ui.ignore()
         ui.notice(self.filter0)
         ui.set_analysis('energy')
