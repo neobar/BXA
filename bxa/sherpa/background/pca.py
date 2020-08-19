@@ -279,7 +279,9 @@ class PCAFitter(object):
                 return
         raise Exception('ERROR: Could not load PCA components for this detector (%s %s, %d channels). Try the SingleFitter instead.' % (telescope, instrument, self.ndata))
 
+
     def load(self, filename):
+        self.modelFile = filename
         with open(filename, 'r') as f:
             self.pca = json.load(f)
         for k, v in self.pca.items():
@@ -296,6 +298,13 @@ class PCAFitter(object):
         self.x = np.arange(ihi-ilo)
         self.ilo = ilo
         self.ihi = ihi
+
+        # Save filter.
+        ui.set_analysis('channel')
+        self.filter0 = ui.get_filter()
+        ui.ignore()
+        ui.notice(self.ilo, self.ihi - 1)  # ui.notice(a, b), from channel a to channel b, including channels a, b.
+        ui.set_analysis('energy')
 
     def decompose(self):
         mean = self.pca['mean']
@@ -322,9 +331,8 @@ class PCAFitter(object):
     def fit(self):
         # try a PCA decomposition of this spectrum
         initial = self.decompose()
-        id = self.id
         ui.set_method('neldermead')
-        bkgmodel = PCAModel('pca%s' % id, data=self.pca)
+        bkgmodel = PCAModel('pca%s' % self.id, data=self.pca)
         self.bkgmodel = bkgmodel
         response = get_identity_response(self.id)
         convbkgmodel = response(bkgmodel)
@@ -334,31 +342,30 @@ class PCAFitter(object):
         srcmodel = ui.get_model(self.id)
         ui.set_full_model(self.id, srcmodel)
         initial_v = self.calc_bkg_stat()
-        print(ui.get_filter())
-        print('before fit: stat: %s' % (initial_v))
+        # print('before fit: stat: %s' % (initial_v))
         ui.fit_bkg(id=self.id)
-        print('fit: first full fit done')
-        final = [p.val for p in ui.get_bkg_model(id).pars]
-        print('fit: parameters: %s' % (final))
+        # print('fit: first full fit done')
+        final = [p.val for p in ui.get_bkg_model(self.id).pars]
+        # print('fit: parameters: %s' % (final))
         initial_v = self.calc_bkg_stat()
-        print('fit: stat: %s' % (initial_v))
+        # print('fit: stat: %s' % (initial_v))
 
         # lets try from zero
-        logf.info('fit: second full fit from zero')
+        # logf.info('fit: second full fit from zero')
         for p in bkgmodel.pars:
             p.val = 0
         ui.fit_bkg(id=self.id)
         initial_v0 = self.calc_bkg_stat()
-        logf.info('fit: parameters: %s' % (final))
-        logf.info('fit: stat: %s' % (initial_v0))
+        # logf.info('fit: parameters: %s' % (final))
+        # logf.info('fit: stat: %s' % (initial_v0))
 
         # pick the better starting point
         if initial_v0 < initial_v:
-            logf.info('fit: using zero-fit')
+            # logf.info('fit: using zero-fit')
             initial_v = initial_v0
-            final = [p.val for p in ui.get_bkg_model(id).pars]
+            final = [p.val for p in ui.get_bkg_model(self.id).pars]
         else:
-            logf.info('fit: using decomposed-fit')
+            # logf.info('fit: using decomposed-fit')
             for p, v in zip(bkgmodel.pars, final):
                 p.val = v
 
@@ -369,7 +376,7 @@ class PCAFitter(object):
             bkgmodel.pars[i].val = 0
             bkgmodel.pars[i].freeze()
             ui.fit_bkg(id=self.id)
-            final = [p.val for p in ui.get_bkg_model(id).pars]
+            final = [p.val for p in ui.get_bkg_model(self.id).pars]
             v = self.calc_bkg_stat()
             print('--> %d parameters, stat=%.2f' % (i, v))
             results.insert(0, (v + 2*i, final, i, v))
@@ -401,8 +408,7 @@ class PCAFitter(object):
             next_final = [p.val for p in ui.get_bkg_model(id).pars]
             v = self.calc_bkg_stat()
             next_aic = v + 2*next_nparams
-            if next_aic < last_aic:
-                # accept
+            if next_aic < last_aic:  # accept
                 print('%d parameters, aic=%.2f ** accepting' % (next_nparams, next_aic))
                 last_aic, last_final, last_nparams, last_val = next_aic, next_final, next_nparams, v
             else:
@@ -418,16 +424,15 @@ class PCAFitter(object):
 
         last_model = convbkgmodel
         for i in range(10):
-            print()
             print('Adding Gaussian#%d' % (i+1))
             # find largest discrepancy
-            ui.set_analysis(id, "ener", "rate")
-            m = ui.get_bkg_fit_plot(id)
+            ui.set_analysis(self.id, "ener", "rate")
+            m = ui.get_bkg_fit_plot(self.id)
             y = m.dataplot.y.cumsum()
             z = m.modelplot.y.cumsum()
             diff_rate = np.abs(y - z)
-            ui.set_analysis(id, "ener", "counts")
-            m = ui.get_bkg_fit_plot(id)
+            ui.set_analysis(self.id, "ener", "counts")
+            m = ui.get_bkg_fit_plot(self.id)
             x = m.dataplot.x
             y = m.dataplot.y.cumsum()
             z = m.modelplot.y.cumsum()
@@ -440,7 +445,7 @@ class PCAFitter(object):
             power = diff_rate[i]
             # lets try to inject a gaussian there
 
-            g = ui.xsgaussian('g_%d_%d' % (id, i))
+            g = ui.xsgaussian('g_%d_%d' % (self.id, i))
             print('placing gaussian at %.2fkeV, with power %s' % (e, power))
             # we work in energy bins, not energy
             g.LineE.min = energies[0]
@@ -459,7 +464,7 @@ class PCAFitter(object):
             next_model = last_model + convbkgmodel2
             ui.set_bkg_full_model(self.id, next_model)
             ui.fit_bkg(id=self.id)
-            next_final = [p.val for p in ui.get_bkg_model(id).pars]
+            next_final = [p.val for p in ui.get_bkg_model(self.id).pars]
             next_nparams = len(next_final)
             v = self.calc_bkg_stat()
             next_aic = v + 2 * next_nparams
@@ -474,6 +479,12 @@ class PCAFitter(object):
                 for p, v in zip(last_model.pars, last_final):
                     p.val = v
                 break
+
+        # Restore filter
+        ui.set_analysis('channel')
+        ui.ignore()
+        ui.notice(self.filter0)
+        ui.set_analysis('energy')
 
 
 __dir__ = [PCAFitter, PCAModel]
