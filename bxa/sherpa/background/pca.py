@@ -197,8 +197,7 @@ class PCAModel(ArithmeticModel):  # Model
             pars = np.array(p[1:])
             y = np.array(pars * self.V.T + self.mean).flatten()
             cts = (10**y - 1) * 10**lognorm
-
-            out = left * 0.0
+            out = np.zeros_like(left, dtype=float)  # out = left * 0.0
             out[self.ilo:self.ihi] = cts
             return out
         except Exception as e:
@@ -299,10 +298,6 @@ class PCAFitter(object):
         self.ihi = ihi
 
     def decompose(self):
-        # ilo = int(self.pca['ilo'])
-        # ihi = int(self.pca['ihi'])
-        # lo = self.pca['lo']
-        # hi = self.pca['hi']
         mean = self.pca['mean']
         V = np.matrix(self.pca['components'])
         s = self.pca['values']
