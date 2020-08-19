@@ -295,11 +295,13 @@ class PCAFitter(object):
         ilo = int(self.pca['ilo'])
         ihi = int(self.pca['ihi'])
         self.cts = self.data[ilo:ihi]
+        self.ncts = self.cts.sum()  # 'have ncts background counts for deconvolution
         self.x = np.arange(ihi-ilo)
         self.ilo = ilo
         self.ihi = ihi
 
-        # Save filter.
+        # Save filter, and only notice the channels between ilo and ihi - 1.
+        # Only the stat value will be affected. For assessment of goodness-of-fit for background.
         ui.set_analysis('channel')
         self.filter0 = ui.get_filter()
         ui.ignore()
@@ -310,14 +312,11 @@ class PCAFitter(object):
         mean = self.pca['mean']
         V = np.matrix(self.pca['components'])
         s = self.pca['values']
-        # U = self.pca['U']
-        ncts = self.cts.sum()
-        print('have %d background counts for deconvolution' % ncts)
-        y = np.log10(self.cts * 1. / ncts + 1.0)
+        y = np.log10(self.cts * 1. / self.ncts + 1.0)
         z = (y - mean) * V
         assert z.shape == (1, len(s)), z.shape
         z = z.tolist()[0]
-        return np.array([np.log10(ncts + 0.1)] + z)
+        return np.array([np.log10(self.ncts + 0.1)] + z)
 
     def calc_bkg_stat(self):
         ss = [s for s in ui.get_stat_info() if self.id in s.ids and s.bkg_ids is not None and len(s.bkg_ids) > 0]
