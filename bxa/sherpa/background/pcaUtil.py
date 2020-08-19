@@ -10,7 +10,6 @@ def fitBkgPCA(id=1):
     """
     The source model should be specified.
     """
-    ui.set_stat('cash')
     bkgmodel = PCAFitter(id=id)  # An id has to be assigned.
     bkgmodel.fit()
 
