@@ -318,14 +318,14 @@ class PCAFitter(object):
         z = z.tolist()[0]
         return np.array([np.log10(self.ncts + 0.1)] + z)
 
-    def calc_bkg_stat(self):
+    def calc_bkg_stat(self, dof=False):
         ss = [s for s in ui.get_stat_info() if self.id in s.ids and s.bkg_ids is not None and len(s.bkg_ids) > 0]
         if len(ss) != 1:
             for s in ui.get_stat_info():
                 if self.id in s.ids and len(s.bkg_ids) > 0:
                     print('get_stat_info returned: ids=%s bkg_ids=%s' % (s.ids, s.bkg_ids))
         assert len(ss) == 1
-        return ss[0].statval
+        return (ss[0].statval, ss[0].dof) if dof else ss[0].statval
 
     def fit(self):
         # try a PCA decomposition of this spectrum
@@ -480,6 +480,7 @@ class PCAFitter(object):
                 break
 
         # Restore filter
+        self.cstat, self.dof = self.calc_bkg_stat(dof=True)  # Save the final cstat and dof (dof = ihi - ilo)
         ui.set_analysis('channel')
         ui.ignore()
         ui.notice(self.filter0)
