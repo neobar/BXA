@@ -300,12 +300,12 @@ class PCAFitter(object):
         self.ilo = ilo
         self.ihi = ihi
 
-        # Save filter, and only notice the channels between ilo and ihi - 1.
-        # Only the stat value will be affected. For assessment of goodness-of-fit for background.
+        # Only notice the channels between ilo + 1 and ihi (channel starts from 1, while index from 0).
+        # The stat value will be affected, for assessment of goodness-of-fit for background.
         ui.set_analysis('channel')
         self.filter0 = ui.get_filter()
         ui.ignore()
-        ui.notice(self.ilo, self.ihi - 1)  # ui.notice(a, b), from channel a to channel b, including channels a, b.
+        ui.notice(self.ilo + 1, self.ihi)  # ui.notice(a, b), from channel a to channel b, including channels a, b.
         ui.set_analysis('energy')
 
     def decompose(self):
@@ -479,12 +479,12 @@ class PCAFitter(object):
                     p.val = v
                 break
 
-        # Restore filter
         self.cstat, self.dof = self.calc_bkg_stat(dof=True)  # Save the final cstat and dof (dof = ihi - ilo)
+        self.filter_energy = ui.get_filter()  # Save the filter for background fitting.
         ui.set_analysis('channel')
-        self.filter_bkg = ui.get_filter()  # Save the filter for background fitting.
+        self.filter_chan = ui.get_filter()  # Save the filter for background fitting.
         ui.ignore()
-        ui.notice(self.filter0)
+        ui.notice(self.filter0)  # restore filter
         ui.set_analysis('energy')
 
 
