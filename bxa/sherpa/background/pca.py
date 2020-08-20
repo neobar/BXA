@@ -1,16 +1,6 @@
-"""
-Lets try something simpler.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-Background model has stages
-SingleFitter goes through stages and fits each with chi^2, then cstat
-
-MultiFitter fits first one with SingleFitter,
-then goes through all the others
-by setting the parameter values to those of the previous id
-and then fitting each stage
-
-
-"""
 import numpy as np
 import json
 import logging
