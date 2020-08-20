@@ -242,11 +242,12 @@ class GaussModel(ArithmeticModel):
 
 
 class PCAFitter(object):
-    def __init__(self, id=None):
+    def __init__(self, id=None, bkgModelDir=None):
         """
         Find background model.
 
         id: which data id to fit
+        bkgModelDir: read background model files from a different directories.
 
         I analysed the background for many instruments, and stored mean and
         principle components. The data file tells us which instrument we deal with,
@@ -259,26 +260,25 @@ class PCAFitter(object):
         in AIC/cstat.
         """
         self.id = id
-        bkg = ui.get_bkg(id)
-        self.data = bkg.counts
-        self.ndata = len(self.data)
-        self.ngaussians = 0
-        hdr = ui.get_bkg(id).header
+        bkg = ui.get_bkg(self.id)
+        hdr = bkg.header
         telescope = hdr.get('TELESCOP', '')
         instrument = hdr.get('INSTRUME', '')
         if telescope == '' and instrument == '':
             raise Exception('ERROR: The TELESCOP/INSTRUME headers are not set in the data file.')
-        for folder in os.environ.get('BKGMODELDIR', '.'), os.path.dirname(__file__):
-            filename = os.path.join(folder, ('%s_%s_%d.json' % (telescope, instrument, self.ndata)).lower())
-            if os.path.exists(filename):
-                self.load(filename)
-                return
-            filename = os.path.join(folder, ('%s_%d.json' % (telescope, self.ndata)).lower())
-            if os.path.exists(filename):
-                self.load(filename)
-                return
-        raise Exception('ERROR: Could not load PCA components for this detector (%s %s, %d channels). Try the SingleFitter instead.' % (telescope, instrument, self.ndata))
-
+        self.data = bkg.counts
+        self.ndata = len(self.data)
+        self.ngaussians = 0
+        if bkgModelDir is None:
+            bkgModelDir = os.path.dirname(__file__)
+        style1 = os.path.join(bkgModelDir, ('%s_%s_%d.json' % (telescope, instrument, self.ndata)).lower())
+        style2 = os.path.join(bkgModelDir, ('%s_%d.json' % (telescope, self.ndata)).lower())
+        if os.path.exists(style1):
+            self.load(style1)
+        elif os.path.exists(style2):
+            self.load(style2)
+        else:
+            raise Exception('ERROR: Could not load PCA components for this detector (%s %s, %d channels). Try the SingleFitter instead.' % (telescope, instrument, self.ndata))
 
     def load(self, filename):
         self.modelFile = filename
