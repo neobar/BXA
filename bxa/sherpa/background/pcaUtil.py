@@ -27,19 +27,16 @@ def fitBkgPCA(id=1):
     return bkgmodel
 
 
-def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True):
+def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True, bkgFitter=None):
     """
     Save the best-fit background model to a .json file.
+    stat = True, no effect.
     """
     bkgModel = ui.get_bkg_model(id=id)
     parDict = {p.fullname: p.val for p in bkgModel.pars}
-    if stat:
-        for p in bkgModel.pars:
-            if p.val == 0 and p.fullname.startswith('pca'):
-                ui.freeze(p)
-        fsrc, fbkg, ffull = ui.get_stat_info()
-        for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat', 'statval']:
-            parDict[i] = getattr(fbkg, i)
+    if bkgFitter is not None:
+        for i in ['cstat', 'dof', 'cstatM', 'cstatS', 'filter_chan']:
+            parDict[i] = getattr(bkgFitter, i)
     with open(writeTo, 'w') as f:
         json.dump(parDict, f)
 
