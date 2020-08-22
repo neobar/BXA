@@ -4,6 +4,7 @@
 from sherpa.astro import ui
 from bxa.sherpa.background.pca import PCAFitter, PCAModel, get_identity_response
 import json
+from xmin.sherpaUtil import cstatDist
 
 
 def fitBkgPCA(id=1):
@@ -12,6 +13,18 @@ def fitBkgPCA(id=1):
     """
     bkgmodel = PCAFitter(id=id)  # An id has to be assigned.
     bkgmodel.fit()
+    ui.set_analysis('channel')
+    ui.ignore()
+    ui.notice(bkgmodel.filter_chan)
+    ui.set_analysis('energy')
+    m, sig = cstatDist(id=id, bkg_id=1)
+    bkgmodel.cstatM = m
+    bkgmodel.cstatS = sig
+    ui.set_analysis('channel')
+    ui.ignore()
+    ui.notice(bkgmodel.filter0)
+    ui.set_analysis('energy')
+    return bkgmodel
 
 
 def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True):
