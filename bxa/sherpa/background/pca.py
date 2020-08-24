@@ -187,6 +187,7 @@ class PCAModel(ArithmeticModel):  # Model
             pars = np.array(p[1:])
             y = np.array(pars * self.V.T + self.mean).flatten()
             cts = (10**y - 1) * 10**lognorm
+            cts = 10**y * 10**lognorm
             out = np.zeros_like(left, dtype=float)  # out = left * 0.0
             out[self.ilo:self.ihi] = cts
             return out
@@ -394,7 +395,7 @@ class PCAFitter(object):
             for p, v in zip(bkgmodel.pars, last_final):
                 p.val = v
             ui.fit_bkg(id=self.id)
-            next_final = [p.val for p in ui.get_bkg_model(id).pars]
+            next_final = [p.val for p in ui.get_bkg_model(self.id).pars]
             v = self.calc_bkg_stat()
             next_aic = v + 2*next_nparams
             if next_aic < last_aic:  # accept
