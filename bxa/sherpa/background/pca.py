@@ -187,7 +187,7 @@ class PCAModel(ArithmeticModel):  # Model
             pars = np.array(p[1:])
             y = np.array(pars * self.V.T + self.mean).flatten()
             cts = (10**y - 1) * 10**lognorm
-            cts = 10**y * 10**lognorm
+            cts[cts <= 0] = 1E-15  # prevent model from predicting negative values.
             out = np.zeros_like(left, dtype=float)  # out = left * 0.0
             out[self.ilo:self.ihi] = cts
             return out
@@ -468,6 +468,8 @@ class PCAFitter(object):
                 ui.set_bkg_full_model(self.id, last_model)
                 for p, v in zip(last_model.pars, last_final):
                     p.val = v
+                    if v == 0:  # the parameter was frozen.
+                        ui.freeze(p)
                 break
 
         self.cstat, self.dof = self.calc_bkg_stat(dof=True)  # Save the final cstat and dof (dof = ihi - ilo)
