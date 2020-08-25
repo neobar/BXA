@@ -27,18 +27,20 @@ def fitBkgPCA(id=1):
     return bkgmodel
 
 
-def saveBkgPCA(id=1, writeTo='bkgPCA.json', stat=True, bkgFitter=None):
+def saveBkgPCA(bkgFitter, id=1, writeTo=None, stat=True):
     """
     Save the best-fit background model to a .json file.
+    bkgFitter, the instance of PCAFitter() should be given.
     stat = True, no effect.
     """
     bkgModel = ui.get_bkg_model(id=id)
     parDict = {p.fullname: p.val for p in bkgModel.pars}
-    if bkgFitter is not None:
-        for i in ['cstat', 'dof', 'cstatM', 'cstatS', 'filter_chan']:
-            parDict[i] = getattr(bkgFitter, i)
-    with open(writeTo, 'w') as f:
-        json.dump(parDict, f)
+    for i in ['cstat', 'dof', 'cstatM', 'cstatS', 'filter_chan']:
+        parDict[i] = getattr(bkgFitter, i)
+    if writeTo is not None:
+        with open(writeTo, 'w') as f:
+            json.dump(parDict, f)
+    return parDict
 
 
 def saveSrcModel(id=1, writeTo='srcPowerLaw.json', stat=True, info={}):
