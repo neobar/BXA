@@ -104,9 +104,7 @@ def loadBkgPCA(id=1, readFrom='bkgPCA.json'):
     """
     load PCA background from
     """
-    ui.set_analysis('channel')
     filter0 = ui.get_filter()
-    ui.set_analysis(id, 'energy')
 
     with open(readFrom, 'r') as f:
         parDict = json.load(f)
@@ -117,10 +115,8 @@ def loadBkgPCA(id=1, readFrom='bkgPCA.json'):
         p.val = parDictRed[p.name]
     idrsp = get_identity_response(id)
     ui.set_bkg_full_model(id, idrsp(bkgModel))
-    ui.set_analysis(id, 'channel')
     ui.ignore()
     ui.notice(filter0)
-    ui.set_analysis(id, 'energy')
 
 
 def fixBkgModel(id=1, freeNorm=True):
