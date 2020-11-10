@@ -11,6 +11,11 @@ def fitBkgPCA(id=1):
     """
     The source model should be specified.
 
+    Known Issues:
+        While the photon indexes resulting from Wstat and PCA-based background fitting are consistent
+        for MOS1 and MOS2, the photon index resulting from PCA-based background fitting for pn
+        seems to be biased (steeper) by 0.04-0.05. The PCA-based model overestimates
+        the background in the hard band.
     TODO:
         allow binned bkg spectrum.
     """
