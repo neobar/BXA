@@ -299,7 +299,7 @@ class PCAFitter(object):
         # ui.get_filter() will, instead, reture the binned channels if the spectrum is grouped.
         if self.grouping0 is not None:
             ui.ungroup()
-            self.filter0 = ui.get_filter()
+        self.filter0 = ui.get_filter()
         ui.ignore()
         ui.notice(self.ilo + 1, self.ihi)  # ui.notice(a, b), from channel a to channel b, including channels a, b.
         self.filter_chan = ui.get_filter()
