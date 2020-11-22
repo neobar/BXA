@@ -16,8 +16,6 @@ def fitBkgPCA(id=1):
         for MOS1 and MOS2, the photon index resulting from PCA-based background fitting for pn
         seems to be biased (steeper) by 0.04-0.05. The PCA-based model overestimates
         the background in the hard band.
-    TODO:
-        allow binned bkg spectrum.
     """
     bkgmodel = PCAFitter(id=id)  # An id has to be assigned.
     bkgmodel.fit()

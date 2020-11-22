@@ -293,11 +293,19 @@ class PCAFitter(object):
 
         # Only notice the channels between ilo + 1 and ihi (channel starts from 1, while index from 0).
         # The stat value will be affected, for assessment of goodness-of-fit for background.
+        self.grouping0 = ui.get_grouping()
         ui.set_analysis('channel')
-        self.filter0 = ui.get_filter()
+        # The channel filters, filter0 and filter_chan are all native channels.
+        # ui.get_filter() will, instead, reture the binned channels if the spectrum is grouped.
+        if self.grouping0 is not None:
+            ui.ungroup()
+            self.filter0 = ui.get_filter()
         ui.ignore()
         ui.notice(self.ilo + 1, self.ihi)  # ui.notice(a, b), from channel a to channel b, including channels a, b.
+        self.filter_chan = ui.get_filter()
         ui.set_analysis('energy')
+        if self.grouping0 is not None:
+            ui.group()
 
     def decompose(self):
         mean = self.pca['mean']
@@ -475,7 +483,6 @@ class PCAFitter(object):
         self.cstat, self.dof = self.calc_bkg_stat(dof=True)  # Save the final cstat and dof (dof = ihi - ilo)
         self.filter_energy = ui.get_filter()  # Save the filter for background fitting.
         ui.set_analysis('channel')
-        self.filter_chan = ui.get_filter()  # Save the filter for background fitting.
         ui.ignore()
         ui.notice(self.filter0)  # restore filter
         ui.set_analysis('energy')
