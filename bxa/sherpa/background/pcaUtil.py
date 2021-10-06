@@ -37,7 +37,12 @@ def saveBkgPCA(bkgFitter, id=1, writeTo=None, stat=True):
     """
     Save the best-fit background model to a .json file.
     bkgFitter, the instance of PCAFitter() should be given.
-    stat = True, no effect.
+    Paramaters:
+    id = 1
+        The identification number of the dataset, the model of which is to be saved.
+        Thefore, this function is not for joint fitting now.
+    stat = True,
+        backward compatibility, no effect.
     """
     bkgModel = ui.get_bkg_model(id=id)
     parDict = {p.fullname: p.val for p in bkgModel.pars}
