@@ -488,4 +488,4 @@ class PCAFitter(object):
         ui.set_analysis('energy')
 
 
-__dir__ = [PCAFitter, PCAModel]
+__all__ = ['PCAFitter', 'PCAModel']

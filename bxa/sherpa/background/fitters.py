@@ -24,7 +24,7 @@ custom background statistic, similar to chi^2
 
 Sherpa itself does not expose the statistic of the background fit
 as far as I can tell. This has the benefit of being rather stable
-and giving large, sensitive values when the fit is poor. (CStat tends to 
+and giving large, sensitive values when the fit is poor. (CStat tends to
 flatten out)
 
 i: spectrum ID
@@ -76,7 +76,7 @@ load_user_stat("bxaroughstat", wstatfunc, custom_staterr_func)
 """
 custom routine to find the best normalisation in a robust way.
 
-Often the starting point can be way off and the statistic will not 
+Often the starting point can be way off and the statistic will not
 give good indications which way to go. So use my_bkg_stat. This routine
 tries to go both up and down from the starting point to escape this flatness.
 
@@ -140,7 +140,7 @@ def robust_opt(i, params):
 			plot_bkg_fit_resid(i)
 			print('press ENTER to continue >> ', end=' ')
 			sys.stdin.readline()
-	
+
 	logi.debug('        robust_opt: my optimization end ---')
 
 logbs = logging.getLogger('bxa.BackgroundStorage')
@@ -179,7 +179,7 @@ class BackgroundStorage(object):
 				continue
 			p.val = bkg_pars[p.fullname]
 		return bkg_model
-	
+
 	def store_bkg_model(self, stats, **kwargs):
 		i = self.i
 		m = get_bkg_model(i)
@@ -199,7 +199,7 @@ class BackgroundStorage(object):
 			with open(self.backgroundparamsfile, 'w') as f:
 				json.dump(dict(params=params, stats=stats,
 					plot=dict(x=p.dataplot.x.tolist(), ydata=p.dataplot.y.tolist(), ymodel=p.modelplot.y.tolist()),
-					**kwargs), 
+					**kwargs),
 					f, indent=4)
 			logbs.info('store_bkg_model: stored as "%s"' % self.backgroundparamsfile)
 		names = [p.fullname for p in m.pars]
@@ -215,13 +215,13 @@ logf.setLevel(logging.INFO)
 
 class SingleFitter(object):
 	def __init__(self, id, filename, backgroundmodel, load=False):
-		""" 
+		"""
 		id: which data id to fit
-		
+
 		filename: prefix for where to store background information
-		
+
 		backgroundmodel: A background model, such as ChandraBackground
-		
+
 		load: whether the background file should be loaded now
 		"""
 		self.id = id
@@ -241,13 +241,13 @@ class SingleFitter(object):
 			logf.info('Background loaded, stage %s%s' % (stage, '(last)' if self.bm.stages[-1] == stage else '(more to go)'))
 			if stage == props['stage']:
 				break
-		
+
 	def fit(self, reinit=True, plot=False):
 		for stage in self.bm.stages:
 			self.prepare_stage(stage=stage)
 			self.fit_stage(stage=stage, plot=plot)
 		logf.info('Background fit complete.')
-	
+
 	#def fit_continue(self, reinit=True, plot=False):
 	#	stages = list(self.bm.stages)
 	#	for stage in self.bm.stages:
@@ -261,8 +261,8 @@ class SingleFitter(object):
 	#	for stage in stages:
 	#		self.prepare_stage(stage=stage)
 	#		self.fit_stage(stage=stage, plot=plot)
-			
-	
+
+
 	def prepare_stage(self, stage, prev=None, link=False):
 		i = self.id
 		logf.info('prepare_stage %s of ID=%s' % (stage, i))
@@ -292,7 +292,7 @@ class SingleFitter(object):
 			else:
 				pa.freeze()
 		logf.info('prepare_stage %s of ID=%s done' % (stage, i))
-				
+
 	def fit_stage(self, stage, plot=False):
 		i = self.id
 		#set_method_opt('ftol', 0.1)
@@ -304,7 +304,7 @@ class SingleFitter(object):
 				logf.debug('fit_stage %s of ID=%s (stat: %.3f)... plotting done' % (stage, i, s))
 		logf.info('fit_stage %s of ID=%s' % (stage, i))
 		logf.debug(get_bkg_model(i))
-		
+
 		if get_bkg(i).counts.sum() > 500:
 			logf.info('fit_stage %s of ID=%s. rough fit ...' % (stage, i))
 			prev_filter = get_filter(i)
@@ -313,14 +313,14 @@ class SingleFitter(object):
 			set_stat('chi2gehrels')
 			logf.debug('plotting')
 			doplot()
-			
+
 			normparams = [p for p in self.bm.stagepars if p.name in ['ampl', 'norm']]
 			if normparams:
 				logf.debug('simple optimization')
 				robust_opt(i, normparams)
 			logf.debug('calling fit_bkg()')
 			fit_bkg(i)
-			
+
 			logf.debug('plotting')
 			doplot()
 			ungrouping_bug = False
@@ -330,14 +330,14 @@ class SingleFitter(object):
 			except Exception as e:
 				logf.warn('ungrouping failed')
 				ungrouping_bug = True
-			
+
 			logf.debug('setting filters')
 			ignore()
 			notice(prev_filter)
 			self.stage = stage
 			logf.debug('storing')
 			self.store()
-		
+
 		logf.info('fit_stage %s of ID=%s.  fine fit ...' % (stage, i))
 		set_method_opt('ftol', 0.001)
 		set_stat('cstat')
@@ -352,18 +352,18 @@ class SingleFitter(object):
 			ungroup(i)
 		except Exception as e:
 			logf.warn('ungrouping failed')
-		
+
 logmf = logging.getLogger('bxa.MultiFitter')
 logmf.setLevel(logging.INFO)
 
 class MultiFitter(object):
 	def __init__(self, filename, backgroundmodel, load=True):
 		"""
-		filename should be a text file, containing all the 
+		filename should be a text file, containing all the
 		file names (if load=True) or storage prefixes
-		
+
 		backgroundmodel: background model to use (e.g. ChandraBackground)
-		
+
 		load: whether the background file should be loaded now
 		"""
 		ids = [l.strip() for l in open(filename).readlines()]
@@ -376,7 +376,7 @@ class MultiFitter(object):
 			self.fitters[i] = SingleFitter(i, name, backgroundmodel, load=load)
 		self.ids = sorted(ids, key=lambda i: get_bkg(i).counts.sum(), reverse=True)
 		logmf.debug('MultiFitter: loading done')
-		
+
 	"""
 	MultiFitter fits first one with SingleFitter,
 	then goes through all the others
@@ -399,14 +399,14 @@ class MultiFitter(object):
 				firstfit.fit_stage(stage=stage, **kwargs)
 				pars_at_stages[stage] = list(firstfit.bm.pars)
 			logmf.info('MultiFitter: fit first ID=%s done' % first)
-			
+
 			# we want to improve our statistics by fitting jointly
 			for stage in stages:
 				logmf.info('MultiFitter: joint fitting, stage "%s" ...' % stage)
 				firstfit.prepare_stage(stage=stage)
 				for i in batchids[1:]:
 					self.fitters[i].prepare_stage(stage=stage, prev=pars_at_stages[stage], link=True)
-				
+
 				logmf.debug('MultiFitter: joint fitting, stage "%s", rough chi^2...' % stage)
 				set_method_opt('ftol', 0.1)
 				set_stat('chi2gehrels')
@@ -459,7 +459,7 @@ class MultiFitter(object):
 			notice(prev_filter)
 			self.fitters[i].store()
 		logmf.debug('fit_jointly_stage %s: fine fit ...' % (stage))
-		
+
 		set_method_opt('ftol', 0.001)
 		set_stat('cstat')
 		doplot(ids[0])
@@ -470,5 +470,4 @@ class MultiFitter(object):
 			self.fitters[i].store()
 		logmf.debug('fit_jointly_stage %s: stage done' % (stage))
 
-__dir__ = [SingleFitter, MultiFitter, BackgroundStorage, robust_opt, my_bkg_stat]
-
+__all__ = ['SingleFitter', 'MultiFitter', 'BackgroundStorage', 'robust_opt', 'my_bkg_stat']
