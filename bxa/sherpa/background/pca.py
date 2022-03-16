@@ -455,7 +455,7 @@ class PCAFitter(object):
                 i = 2
             g.Sigma = (x[i + 1] - x[i - 1])
             g.Sigma.min = (x[i + 1] - x[i - 1])/3
-            g.Sigma.max = x[-1] - x[0]
+            g.Sigma.max = x[-1] - x[0]  if x[-1] - x[0] < 20 else 20 # Sherpa 4.14 enfored a hard limit of 20 of simga
             g.norm.min = power * 1e-6
             g.norm.val = power
             convbkgmodel2 = response(g)
