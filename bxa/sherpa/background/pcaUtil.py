@@ -50,7 +50,7 @@ def saveBkgPCA(bkgFitter, id=1, writeTo=None, stat=True):
         parDict[i] = getattr(bkgFitter, i)
     if writeTo is not None:
         with open(writeTo, 'w') as f:
-            json.dump(parDict, f)
+            json.dump(parDict, f, indent=4)
     return parDict
 
 
@@ -66,7 +66,7 @@ def saveSrcModel(id=1, writeTo='srcPowerLaw.json', stat=True, info={}):
     for key, val in info.items():
         parDict[key] = val
     with open(writeTo, 'w') as f:
-        json.dump(parDict, f)
+        json.dump(parDict, f, indent=4)
 
 
 def saveModel(amodel, writeTo, stat=True, info={}):
@@ -86,7 +86,7 @@ def saveModel(amodel, writeTo, stat=True, info={}):
     for key, val in info.items():
         parDict[key] = val
     with open(writeTo, 'w') as f:
-        json.dump(parDict, f)
+        json.dump(parDict, f, indent=4)
 
 
 def loadPars(amodel, readFrom):
