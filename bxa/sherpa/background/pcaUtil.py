@@ -80,9 +80,9 @@ def saveModel(amodel, writeTo, stat=True, info={}):
     # The paramater is frozen if frozen is True.
     parDict = {p.name: (p.val, p.frozen) for p in amodel.pars}
     if stat:
-        fsrc, *_ = ui.get_stat_info()  # Only the first data set, i.e. the source is returned.
+        fit = ui.get_fit_results()  # the results of the last fit
         for i in ['statname', 'numpoints', 'dof', 'qval', 'rstat', 'statval']:
-            parDict[i] = getattr(fsrc, i)
+            parDict[i] = getattr(fit, i)
     for key, val in info.items():
         parDict[key] = val
     with open(writeTo, 'w') as f:
